@@ -1,0 +1,166 @@
+# krn: a typed Python kernel language and compiler. Run every verb from this directory.
+#
+#   mb run lint     ruff check, ruff format --check, ty and pyrefly over src, tests, examples and experiments
+#   mb run test     pytest with the 100% coverage gate; hardware tests skip unless KRN_HARDWARE=1
+#   mb run ci       lint, then test
+#
+# Python 3.14 only for now; recheck 3.15 in 2 to 3 months, about January 2027.
+# Both type checkers cover src, tests, examples and experiments.
+# A workspace of its own until krn joins the monorepo's default environment,
+# which also holds Python 3.14. Workflows bootstrap with uv; local work uses mainboard.
+
+[system]                                  # floors for cross-solving
+macos = "14.5"                             # MLX wheels need macOS 14 or newer
+
+[workspace]
+name      = "krn"
+platforms = ["osx-arm64", "linux-64", "linux-aarch64"]
+channels  = ["conda-forge"]
+scripts   = ["scripts/activate.sh"]
+
+[env]
+PYTHONUTF8         = "1"
+PYTHONFAULTHANDLER = "1"
+PYTHONUNBUFFERED   = "1"
+
+[deps]
+python = ">=3.14, <3.15"
+numpy  = ">=2.5.4, <3"
+
+# The package itself, editable, so `krn` and the tests import the working tree. Its base dependencies come from pyproject.toml.
+[python.deps]
+krn = { path = ".", editable = true }
+
+# Mirrors the `dev` extra in pyproject.toml; keep the two lists equal.
+[dev.deps]
+cyclopts      = ">=5.3.2,<6"   # the scripts in experiments/; krn itself has no command line
+ruff           = ">=0.17.3"
+ty             = ">=0.0.95"
+pyrefly        = ">=1.4.0"
+pytest         = ">=9.2"
+pytest-timeout = ">=2.4"
+
+[dev.python.deps]
+pytest-cov         = ">=7.1"
+pytest-subprocess  = ">=1.6"
+hypothesis         = ">=6.170"
+syrupy             = ">=6.1"
+lizard             = ">=1.17"
+tiktoken           = ">=0.12"
+mmh3               = ">=5.3"
+xxhash             = ">=4.0"
+griffe             = ">=2.4.1, <3"
+jsonschema         = ">=4.26.0, <5"
+
+[on.linux.deps]
+clang = ">=23.1.4,<24"
+
+[on.osx.python.deps]
+os-signpost = ">=0.0.3,<1"
+pyobjc-framework-Metal = ">=13,<14"
+pyobjc-framework-MetalPerformanceShaders = ">=13,<14"
+mlx = ">=0.32,<1"
+wgpu = ">=0.32,<1"
+openvino = ">=2026.4,<2027"
+
+[on.linux.python.deps]
+cupti-python = ">=13.4,<14"
+nvtx = ">=0.2.16,<0.3"
+pyzes = ">=0.1.4,<1"
+wgpu = ">=0.32,<1"
+
+# OpenVINO's ARM Linux wheel needs glibc 2.35, and the GH200's RHEL 9 has 2.34. pyhwloc is left out of the managed
+# environment: it ships only an sdist whose CMake build fails on the job hosts, so it stays the opt-in `probe` extra.
+[on.linux-64.python.deps]
+openvino = ">=2026.4,<2027"
+cuda-core = ">=1.2,<2"
+cuda-bindings = ">=13.4,<14"
+cuda-pathfinder = ">=1.8,<2"
+nvidia-cuda-nvrtc = ">=13,<14"
+nvidia-nvjitlink = ">=13,<14"
+nvmath-python = { version = ">=1.0,<2", extras = ["cu13"] }
+
+# The GH200 (Grace, linux-aarch64) takes the same CUDA stack: every wheel below ships a manylinux aarch64 build at its latest release.
+[on.linux-aarch64.python.deps]
+cuda-core = ">=1.2,<2"
+cuda-bindings = ">=13.4,<14"
+cuda-pathfinder = ">=1.8,<2"
+nvidia-cuda-nvrtc = ">=13,<14"
+nvidia-nvjitlink = ">=13,<14"
+nvmath-python = { version = ">=1.0,<2", extras = ["cu13"] }
+
+[tasks]
+lint-ruff   = { run = "ruff check src tests examples experiments", description = "ruff lint" }
+lint-format  = { run = "ruff format --check src tests examples experiments", description = "ruff format, read only" }
+lint-ty      = { run = "ty check src tests examples experiments", description = "ty over src, tests, examples and experiments" }
+lint-pyrefly = { run = "pyrefly check", description = "pyrefly over src, tests, examples and experiments" }
+lint         = { depends = ["lint-ruff", "lint-format", "lint-ty", "lint-pyrefly"], description = "every static check" }
+test         = { run = "pytest --timeout=300", description = "pytest with the 100% coverage gate" }
+ci           = { depends = ["lint", "test"], description = "what a change must pass" }
+spec         = { run = "python -m scripts.build_spec", description = "the release spec, into KRN_SPEC_OUT or the site's data/spec" }
+test-gpu = { run = "python -m pytest --timeout=300 -rs tests/runtime/test_gpu.py", description = "GPU tests; dispatch with mb run --on silo test-gpu" }
+
+# The RTX 5080 box (Fedora 44, `Host silo` in ~/.ssh/config). Its own mirror, next to the other workspaces'.
+[hosts.silo]
+kind     = "ssh"
+platform = "linux-64"
+root     = "/home/pedro/.mb-jobs-krn"
+
+# The RTX 3090 box (sm_86). GPU 0 hosts AIZK, so jobs see GPU 1 only, the same pin the root manifest uses.
+[hosts.crimson]
+kind     = "ssh"
+platform = "linux-64"
+root     = "/home/crimson/.mb-jobs-krn"
+
+[hosts.crimson.exports]
+CUDA_VISIBLE_DEVICES = "GPU-2971eddb-2fcf-9baf-5b0e-0d634e91b555"
+
+# The Miyabi-G GH200 cluster (Grace aarch64 CPU, H100 sm_90a), reached through PBS after the owner's one login every 72
+# hours (see the miyabi skill). The login node holds 14 GB per user, so setup stops at three quarters of it.
+[hosts.miyabi-g]
+kind              = "pbs"
+platform          = "linux-aarch64"
+root              = "/work/xg25g007/x10537/projects-krn"
+account           = "xg25g007"
+scratch           = "{{ env('LOCALDIR', '') }}"
+login-memory-gb   = 14
+
+[hosts.miyabi-g.queues.debug-g]
+max-walltime   = "00:30:00"
+mem-ceiling-gb = 100
+gpus-per-node  = 1
+
+[hosts.miyabi-g.queues.short-g]
+max-walltime   = "07:59:59"
+mem-ceiling-gb = 100
+gpus-per-node  = 1
+max-jobs       = 8
+notes          = "memsw cgroup cap ~100GB, and the exact 08:00:00 boundary is rejected"
+
+[hosts.miyabi-g.queues.interact-g]
+max-walltime   = "02:00:00"
+mem-ceiling-gb = 100
+gpus-per-node  = 1
+max-jobs       = 1
+notes          = "one interactive job per user; a held line takes it, so `shell --on miyabi-g` is refused"
+
+[hosts.miyabi-g.queues.held]
+scheduler      = "held"
+max-walltime   = "01:50:00"
+mem-ceiling-gb = 100
+gpus-per-node  = 1
+notes          = "needs `host hold miyabi-g`; takes no tokens; one job at a time on one GH200"
+
+[hosts.miyabi-g.defaults]
+queue          = "debug-g"
+walltime       = "00:20:00"
+mem-gb         = "min(100, attempt * 50)"
+interact-queue = "interact-g"
+
+# What a job host needs: the manifest, the sources and the tests.
+[hosts.defaults.sync]
+include = ["mb.toml", "pyproject.toml", "README.md", "LICENSE", "src", "tests", "examples", "experiments", "scripts", "stubs"]
+exclude = ["__pycache__/", ".pytest_cache/", ".ruff_cache/", "*.pyc", "evidence/"]
+
+[git]
+never-commit = ["evidence/"]

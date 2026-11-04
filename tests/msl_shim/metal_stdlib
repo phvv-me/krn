@@ -1,0 +1,101 @@
+// A stand-in for <metal_stdlib>, so that a translation unit written in the Metal Shading Language parses and type
+// checks as C++ on any machine with clang, with no C++ library installed. It checks the shapes of the calls (names,
+// argument counts, types, address-space casts) and nothing about what the GPU does: bodies are stubs or builtins.
+#pragma once
+
+#define device
+#define threadgroup
+#define constant const
+#define kernel
+
+using uchar = unsigned char;
+using ushort = unsigned short;
+using uint = unsigned int;
+using ulong = unsigned long;  // 64 bits where Metal's `ulong` is (LP64: macOS and Linux)
+using half = _Float16;
+using bfloat = __bf16;
+struct uint3 { uint x, y, z; };
+struct float4 { float x, y, z, w; };
+
+namespace metal {
+enum mem_flags { mem_none = 0, mem_device = 1, mem_threadgroup = 2 };
+enum memory_order { memory_order_relaxed, memory_order_seq_cst };
+enum thread_scope { thread_scope_threadgroup, thread_scope_device };
+
+inline void threadgroup_barrier(mem_flags) {}
+inline void simdgroup_barrier(mem_flags) {}
+inline void atomic_thread_fence(mem_flags, memory_order, thread_scope) {}
+
+struct simd_vote {
+  ulong bits;
+  explicit operator ulong() const { return bits; }
+  explicit operator bool() const { return bits != 0; }
+};
+inline simd_vote simd_ballot(bool p) { return {p ? 1ul : 0ul}; }
+inline simd_vote simd_active_threads_mask() { return {~0ul}; }
+inline bool simd_all(bool p) { return p; }
+inline bool simd_any(bool p) { return p; }
+template <class T> T simd_shuffle(T v, ushort) { return v; }
+template <class T> T simd_shuffle_up(T v, ushort) { return v; }
+template <class T> T simd_shuffle_down(T v, ushort) { return v; }
+template <class T> T simd_shuffle_xor(T v, ushort) { return v; }
+
+struct atomic_int { using value_type = int; int v; };
+struct atomic_uint { using value_type = unsigned; unsigned v; };
+template <class A> typename A::value_type atomic_load_explicit(A* p, memory_order) { return __atomic_load_n(&p->v, __ATOMIC_RELAXED); }
+template <class A> typename A::value_type atomic_exchange_explicit(A*, typename A::value_type v, memory_order) { return v; }
+template <class A> bool atomic_compare_exchange_weak_explicit(A* p, typename A::value_type* expected, typename A::value_type desired, memory_order, memory_order) { return __atomic_compare_exchange_n(&p->v, expected, desired, true, __ATOMIC_RELAXED, __ATOMIC_RELAXED); }
+template <class A> typename A::value_type atomic_fetch_add_explicit(A*, typename A::value_type v, memory_order) { return v; }
+template <class A> typename A::value_type atomic_fetch_sub_explicit(A*, typename A::value_type v, memory_order) { return v; }
+template <class A> typename A::value_type atomic_fetch_and_explicit(A*, typename A::value_type v, memory_order) { return v; }
+template <class A> typename A::value_type atomic_fetch_or_explicit(A*, typename A::value_type v, memory_order) { return v; }
+template <class A> typename A::value_type atomic_fetch_xor_explicit(A*, typename A::value_type v, memory_order) { return v; }
+template <class A> typename A::value_type atomic_fetch_max_explicit(A*, typename A::value_type v, memory_order) { return v; }
+template <class A> typename A::value_type atomic_fetch_min_explicit(A*, typename A::value_type v, memory_order) { return v; }
+
+template <class T, class U> T as_type(U x) {
+  static_assert(sizeof(T) == sizeof(U), "as_type needs types of one size");
+  T r;
+  __builtin_memcpy(&r, &x, sizeof r);
+  return r;
+}
+template <class T> T popcount(T x) { return __builtin_popcount(x); }
+template <class T> T reverse_bits(T x) { return __builtin_bitreverse32(x); }
+template <class T> T clz(T x) { return x ? __builtin_clz(x) : 32; }
+template <class T> T ctz(T x) { return x ? __builtin_ctz(x) : 32; }
+
+template <class T, int Columns, int Rows> struct simdgroup_matrix { T elements[Rows][Columns]; };
+using simdgroup_float8x8 = simdgroup_matrix<float, 8, 8>;
+using simdgroup_half8x8 = simdgroup_matrix<half, 8, 8>;
+template <class T> void simdgroup_load(simdgroup_matrix<T, 8, 8>&, const T*, ulong) {}
+template <class T> void simdgroup_store(simdgroup_matrix<T, 8, 8>, T*, ulong) {}
+template <class T, class A, class B>
+void simdgroup_multiply_accumulate(simdgroup_matrix<T, 8, 8>&, simdgroup_matrix<A, 8, 8>, simdgroup_matrix<B, 8, 8>,
+                                   simdgroup_matrix<T, 8, 8>) {}
+
+inline float exp(float x) { return __builtin_expf(x); }
+inline float exp2(float x) { return __builtin_exp2f(x); }
+inline float exp10(float x) { return __builtin_powf(10.0f, x); }
+inline float log(float x) { return __builtin_logf(x); }
+inline float log2(float x) { return __builtin_log2f(x); }
+inline float log10(float x) { return __builtin_log10f(x); }
+inline float pow(float x, float y) { return __builtin_powf(x, y); }
+inline float sqrt(float x) { return __builtin_sqrtf(x); }
+inline float sin(float x) { return __builtin_sinf(x); }
+inline float cos(float x) { return __builtin_cosf(x); }
+inline float tanh(float x) { return __builtin_tanhf(x); }
+inline float fabs(float x) { return __builtin_fabsf(x); }
+inline float floor(float x) { return __builtin_floorf(x); }
+inline float ceil(float x) { return __builtin_ceilf(x); }
+inline float rint(float x) { return __builtin_rintf(x); }
+inline float trunc(float x) { return __builtin_truncf(x); }
+inline float fma(float a, float b, float c) { return __builtin_fmaf(a, b, c); }
+inline float copysign(float x, float y) { return __builtin_copysignf(x, y); }
+// The precise namespace has the same signatures; this shim does not model GPU rounding.
+namespace precise {
+using metal::exp; using metal::exp2; using metal::exp10;
+using metal::log; using metal::log2; using metal::log10;
+using metal::pow; using metal::sqrt; using metal::sin; using metal::cos; using metal::tanh;
+using metal::fabs; using metal::floor; using metal::ceil; using metal::rint; using metal::trunc; using metal::fma;
+}
+}  // namespace metal

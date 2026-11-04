@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "krn release spec",
+  "description": "One release of krn as data: written by scripts/build_spec.py, read by the documentation site.",
+  "type": "object",
+  "required": ["schema", "version", "git_sha", "date", "python", "api", "compat", "examples", "hardware"],
+  "additionalProperties": false,
+  "properties": {
+    "schema": { "const": "krn.spec/1" },
+    "version": { "$ref": "#/$defs/version" },
+    "git_sha": { "type": "string", "pattern": "^([0-9a-f]{40}|uncommitted)$" },
+    "date": { "type": "string", "format": "date" },
+    "python": { "type": "string" },
+    "api": { "type": "array", "items": { "$ref": "#/$defs/module" } },
+    "compat": {
+      "type": "object",
+      "required": ["schema", "version", "targets", "features"],
+      "properties": {
+        "schema": { "const": "krn.compat.matrix" },
+        "version": { "type": "integer" },
+        "targets": { "type": "array" },
+        "features": { "type": "array" }
+      }
+    },
+    "examples": { "type": "array", "items": { "$ref": "#/$defs/example" } },
+    "hardware": { "$ref": "#/$defs/hardware" }
+  },
+  "$defs": {
+    "version": { "type": "string", "pattern": "^\\d+(\\.\\d+)+$" },
+    "callout": {
+      "type": "object",
+      "required": ["kind", "version", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["versionadded", "versionchanged", "deprecated"] },
+        "version": { "$ref": "#/$defs/version" },
+        "text": { "type": "string" }
+      }
+    },
+    "doc": {
+      "type": "object",
+      "required": ["summary", "description", "parameters", "returns", "raises", "examples", "notes"],
+      "additionalProperties": false,
+      "properties": {
+        "summary": { "type": "string" },
+        "description": { "type": "string" },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "annotation", "description"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "annotation": { "type": ["string", "null"] },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "returns": { "type": ["string", "null"] },
+        "raises": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["exception", "description"],
+            "additionalProperties": false,
+            "properties": { "exception": { "type": "string" }, "description": { "type": "string" } }
+          }
+        },
+        "examples": { "type": "array", "items": { "type": "string" } },
+        "notes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "supported": {
+      "type": "object",
+      "required": ["everywhere", "vendors", "requires"],
+      "additionalProperties": false,
+      "properties": {
+        "everywhere": { "type": ["string", "null"] },
+        "vendors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["vendor", "runs"],
+            "additionalProperties": false,
+            "properties": {
+              "vendor": { "enum": ["NVIDIA", "Apple", "AMD", "CPU"] },
+              "runs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["targets", "reading"],
+                  "additionalProperties": false,
+                  "properties": { "targets": { "type": "string" }, "reading": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
+        "requires": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["vendor", "target", "text"],
+            "additionalProperties": false,
+            "properties": {
+              "vendor": { "type": "string" },
+              "target": { "type": "string" },
+              "text": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "required": ["parameters", "returns"],
+      "additionalProperties": false,
+      "properties": {
+        "parameters": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "kind", "annotation", "default"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "kind": { "type": "string" },
+              "annotation": { "type": ["string", "null"] },
+              "default": { "type": ["string", "null"] }
+            }
+          }
+        },
+        "returns": { "type": ["string", "null"] }
+      }
+    },
+    "member": {
+      "type": "object",
+      "required": [
+        "name", "kind", "defined_in", "source", "doc", "callouts", "deprecated", "supported",
+        "signature", "overloads", "methods", "annotation", "value"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "kind": { "enum": ["function", "class", "constant", "type alias"] },
+        "defined_in": { "type": "string" },
+        "source": {
+          "type": "object",
+          "required": ["path", "line"],
+          "additionalProperties": false,
+          "properties": { "path": { "type": "string" }, "line": { "type": "integer", "minimum": 0 } }
+        },
+        "doc": { "anyOf": [{ "$ref": "#/$defs/doc" }, { "type": "null" }] },
+        "callouts": { "type": "array", "items": { "$ref": "#/$defs/callout" } },
+        "deprecated": { "type": ["string", "null"] },
+        "supported": { "anyOf": [{ "$ref": "#/$defs/supported" }, { "type": "null" }] },
+        "signature": { "anyOf": [{ "$ref": "#/$defs/signature" }, { "type": "null" }] },
+        "overloads": { "type": "array", "items": { "$ref": "#/$defs/signature" } },
+        "methods": { "type": "array", "items": { "$ref": "#/$defs/member" } },
+        "annotation": { "type": ["string", "null"] },
+        "value": { "type": ["string", "null"] }
+      }
+    },
+    "module": {
+      "type": "object",
+      "required": ["module", "members"],
+      "additionalProperties": false,
+      "properties": {
+        "module": { "type": "string", "pattern": "^krn(\\.\\w+)*$" },
+        "members": { "type": "array", "items": { "$ref": "#/$defs/member" } }
+      }
+    },
+    "example": {
+      "type": "object",
+      "required": ["id", "group", "level", "number", "name", "title", "description", "topics", "needs", "path", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^0[1-5]_[a-z_]+/[0-9]{2}_[a-z0-9_]+$" },
+        "group": { "type": "string", "pattern": "^0[1-5]_[a-z_]+$" },
+        "level": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "number": { "type": "integer", "minimum": 1 },
+        "name": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "topics": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1 },
+        "needs": { "type": "array", "items": { "type": "string" } },
+        "path": { "type": "string" },
+        "source": { "type": "string" }
+      }
+    },
+    "hardware": {
+      "type": "object",
+      "required": ["targets", "machines"],
+      "additionalProperties": false,
+      "properties": {
+        "targets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["arch", "vendor", "family"],
+            "additionalProperties": false,
+            "properties": {
+              "arch": { "type": "string" },
+              "vendor": { "type": "string" },
+              "family": { "type": "string" }
+            }
+          }
+        },
+        "machines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["machine", "os", "driver", "tolerance"],
+            "additionalProperties": false,
+            "properties": {
+              "machine": { "type": "string" },
+              "os": { "type": "string" },
+              "driver": { "type": "string" },
+              "tolerance": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

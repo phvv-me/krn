@@ -1,0 +1,38 @@
+# system
+.DS_Store
+
+# editors
+.idea/
+.vscode/
+
+# logs
+*.log
+
+# docs
+site/
+
+# generated
+dist/
+build/
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+.ruff_cache/
+.pytest_cache/
+.pyrefly/
+.mb/
+.ty/
+.hypothesis/
+.coverage
+htmlcov/
+*.egg-info/
+
+# Local benchmark evidence
+evidence/
+
+# Website build output
+web/node_modules/
+web/dist/
+web/.astro/

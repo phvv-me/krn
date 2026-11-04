@@ -1,0 +1,10 @@
+# Changes here will be overwritten by Copier; do not edit by hand.
+_commit: b6e5f9b
+_src_path: /Users/pedro/Developer/projects/templates/oss
+cli_command: krn
+description: 'A typed Python kernel language, in development'
+project_name: krn
+package_name: krn
+project_slug: krn
+repository_name: krn
+module_name: krn

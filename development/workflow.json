@@ -1,0 +1,280 @@
+{
+  "note": "Preserved workflow tasks moved out of the product feature tree.",
+  "tasks": [
+    {
+      "id": "workflow-authority",
+      "title": "Integration authority",
+      "text": "Local integration after checks is approved; the owner authorized the first local commits only, while later commits, pushes, tags, releases, deployment and publication still need approval.",
+      "children": [],
+      "references": [],
+      "done": true,
+      "code": "",
+      "tag": "Decision"
+    },
+    {
+      "id": "workflow-claim",
+      "title": "Task ownership",
+      "text": "Claim one ready leaf with baseline, allowed files, dependency evidence and budget. The coordinator owns claims and shared files. Separate workers cannot concurrently edit the same file.",
+      "children": [],
+      "references": [],
+      "done": false,
+      "code": "",
+      "tag": "Implementation"
+    },
+    {
+      "id": "workflow-review",
+      "title": "Independent review",
+      "text": "Use a separate reviewer for changed semantics, lifetime and concurrency. Add a second reviewer for numerical guarantees, unsafe interfaces or cross-backend changes. Review findings require reproductions or concrete reasoning, not stylistic expansion.",
+      "children": [],
+      "references": [
+        "91"
+      ],
+      "done": false,
+      "code": "",
+      "tag": "Implementation"
+    },
+    {
+      "id": "workflow-block",
+      "title": "Blocker handling",
+      "text": "After two materially different failed approaches, or the task budget, record the smallest reproducer and stop that task. Do not weaken a guarantee to unblock it. The coordinator reassigns independent work; a missing device, dependency, decision and defect have different owners.",
+      "children": [],
+      "references": [],
+      "done": false,
+      "code": "",
+      "tag": "Implementation"
+    },
+    {
+      "id": "workflow-integration",
+      "title": "Local integration",
+      "text": "Verify the baseline and apply only owned changes. Resolve shared-file edits through the coordinator. Run focused checks plus affected integration; retain failures and a reversible patch. No stash, hard reset or destructive cleanup of shared work.",
+      "children": [],
+      "references": [],
+      "done": false,
+      "code": "",
+      "tag": "Implementation"
+    },
+    {
+      "id": "workflow-trial",
+      "title": "Trial round",
+      "text": "Start with three disjoint tasks and one integrator/reviewer. Measure elapsed time, conflict rate and escaped defects before increasing concurrency. Worker count is bounded by ready tasks, file ownership, hardware capacity and budget.",
+      "children": [],
+      "references": [
+        "91"
+      ],
+      "done": false,
+      "code": "",
+      "tag": "Implementation"
+    },
+    {
+      "id": "test-start",
+      "title": "Start with a small acceptance slice",
+      "text": "Before implementation, write the contract and the smallest failing public-behavior examples. For a routine feature, start with a normal case, a boundary and an explained failure; high-risk synchronization needs its safety case immediately.",
+      "children": [
+        {
+          "id": "test-oracle",
+          "title": "Choose the oracle",
+          "text": "Use a specification, independent arithmetic/model or independently implemented reference. Never generate expected answers from the implementation under test.",
+          "children": [],
+          "references": [],
+          "done": false,
+          "code": ""
+        },
+        {
+          "id": "test-red",
+          "title": "Verify the failure",
+          "text": "Show that the test fails for the missing behavior, not an import mistake or broken fixture.",
+          "children": [],
+          "references": [],
+          "done": false,
+          "code": ""
+        },
+        {
+          "id": "test-budget",
+          "title": "Bound the first round",
+          "text": "Avoid exhaustive matrices, broad mocks and fixture frameworks before a working vertical slice. Expand early only when a real risk or failure demands it.",
+          "children": [],
+          "references": [],
+          "done": false,
+          "code": ""
+        },
+        {
+          "id": "test-independent",
+          "title": "Independent expectation",
+          "text": "Write expectations before copying implementation logic. One normal case, one relevant boundary and one failure are a starting heuristic, not a quota. Expand around semantics, not line counts.",
+          "children": [],
+          "references": [
+            "91"
+          ],
+          "done": false,
+          "code": "",
+          "tag": "Implementation"
+        }
+      ],
+      "references": [
+        "13",
+        "14"
+      ],
+      "done": false,
+      "code": ""
+    },
+    {
+      "id": "test-build",
+      "title": "Implement and refactor",
+      "text": "Make the acceptance slice pass; run the nearest existing tests. Keep the public API and oracle stable while refactoring internals. Do not repeatedly run the full suite after every edit.",
+      "children": [],
+      "references": [],
+      "done": false,
+      "code": ""
+    },
+    {
+      "id": "test-expand",
+      "title": "Expand after the slice works",
+      "text": "Before integration, add the missing behavior classes and target coverage justified by the feature.",
+      "children": [
+        {
+          "id": "test-properties",
+          "title": "Hypothesis properties",
+          "text": "Generate valid shapes/dtypes/strides directly. Separate finite arithmetic, special-value cases and invalid inputs. A floating-point identity is a property only under the declared contract.",
+          "children": [],
+          "references": [],
+          "done": false,
+          "code": ""
+        },
+        {
+          "id": "test-mutation",
+          "title": "Fault sensitivity",
+          "text": "For important tests, show they catch a representative wrong implementation: wrong denominator, dropped lane, sign/rounding change or premature resource release. Use targeted mutation checks, not a mandatory full mutation campaign.",
+          "children": [],
+          "references": [],
+          "done": false,
+          "code": ""
+        },
+        {
+          "id": "test-review",
+          "title": "Independent review",
+          "text": "Review whether assertions establish the requested behavior. Coverage can reveal gaps; it does not prove semantic correctness. Do not discard a valid failing test just because the current code fails it.",
+          "children": [],
+          "references": [],
+          "done": false,
+          "code": ""
+        }
+      ],
+      "references": [
+        "10",
+        "13",
+        "14"
+      ],
+      "done": false,
+      "code": ""
+    },
+    {
+      "id": "test-profiles",
+      "title": "Budget test execution",
+      "text": "Use a fast local profile, broader integration profile and bounded scheduled campaign; measure suite cost before setting limits.",
+      "children": [
+        {
+          "id": "test-replay",
+          "title": "Preserve counterexamples",
+          "text": "Persist Hypothesis examples where useful, then promote important shrunk failures to explicit regression cases. Record Hypothesis version and inputs; a seed alone is not a durable cross-version replay.",
+          "children": [],
+          "references": [],
+          "done": false,
+          "code": ""
+        },
+        {
+          "id": "test-expensive",
+          "title": "Separate generation from launches",
+          "text": "Generate many cheap model cases; replay a representative corpus on devices. Amortize compilation by specialization, not by changing numerical policy.",
+          "children": [],
+          "references": [],
+          "done": false,
+          "code": ""
+        },
+        {
+          "id": "test-fixtures",
+          "title": "Reset state per example",
+          "text": "A pytest function-scoped fixture is not recreated for each Hypothesis example. Reset streams, buffers, warnings and global settings inside each generated case.",
+          "children": [],
+          "references": [],
+          "done": false,
+          "code": ""
+        },
+        {
+          "id": "test-deadline",
+          "title": "Separate deadlines from benchmarks",
+          "text": "For selected asynchronous/JIT tests, disable Hypothesis\u2019s per-example deadline only with an outer test/job timeout. max_examples is not a hard cap on all shrink/replay work.",
+          "children": [],
+          "references": [],
+          "done": false,
+          "code": ""
+        },
+        {
+          "id": "test-stateful",
+          "title": "Lifecycle state machines",
+          "text": "Use rule-based stateful tests for allocate/launch/await/cancel/drain/release and graph/cache ownership; check invariants after each transition.",
+          "children": [],
+          "references": [],
+          "done": false,
+          "code": ""
+        }
+      ],
+      "references": [
+        "10",
+        "11",
+        "12"
+      ],
+      "done": false,
+      "code": "<pre><code class=\"language-python\"><span class=\"comment\"># Illustrative profiles; calibrate counts against measured suite cost.</span>\n<span class=\"keyword\">from</span> hypothesis <span class=\"keyword\">import</span> settings\n\nsettings.register_profile(<span class=\"string\">\"local\"</span>, max_examples=<span class=\"number\">20</span>)\nsettings.register_profile(<span class=\"string\">\"integration\"</span>, max_examples=<span class=\"number\">100</span>)\n<span class=\"comment\"># Keep shrinking/replay enabled. Bound the enclosing job separately.</span></code></pre>"
+    },
+    {
+      "id": "test-integration",
+      "title": "Test real integration",
+      "text": "Keep one thin public path from installed package through capture, compiler, launch and result. Mocks test failure handling; they do not certify hardware.",
+      "children": [
+        {
+          "id": "test-wheel",
+          "title": "Installed artifact",
+          "text": "Build a wheel and test it outside the checkout with CPU-only and selected extras. Verify JIT compiler diagnostics and package contents.",
+          "children": [],
+          "references": [],
+          "done": false,
+          "code": ""
+        },
+        {
+          "id": "test-concurrency",
+          "title": "GPU scheduling",
+          "text": "Parallelize isolated CPU tests. Serialize tests sharing device/global state; reserve exclusive GPU access for timing and use separate concurrency tests.",
+          "children": [],
+          "references": [],
+          "done": false,
+          "code": ""
+        },
+        {
+          "id": "test-xfail",
+          "title": "Failure accounting",
+          "text": "Use strict expected failures with a cause and completion task. Missing required hardware fails that runner\u2019s job; optional absent hardware is reported as unavailable, never passed.",
+          "children": [],
+          "references": [],
+          "done": false,
+          "code": ""
+        },
+        {
+          "id": "test-tools",
+          "title": "Sanitizer pass",
+          "text": "Run selected memory/synchronization kernels under vendor tools. NVIDIA memcheck/racecheck/synccheck cover different hazards; a clean run is not a proof of every race.",
+          "children": [],
+          "references": [],
+          "done": false,
+          "code": ""
+        }
+      ],
+      "references": [
+        "9",
+        "12",
+        "34"
+      ],
+      "done": false,
+      "code": ""
+    }
+  ]
+}

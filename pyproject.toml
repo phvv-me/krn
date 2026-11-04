@@ -1,0 +1,282 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "krn"
+version = "0.0.1"
+description = "A typed Python kernel language, in development"
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+license = "Apache-2.0"
+authors = [{ name = "Pedro Valois", email = "contact@phvv.me" }]
+keywords = ["gpu", "gpu-kernels", "cuda", "metal", "rocm", "compiler", "sparse", "mixed-precision"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Software Development :: Compilers",
+]
+dependencies = [
+  "numpy>=2.5.4,<3",
+  "patos>=0.0.15,<0.1",
+  "psutil>=7.2,<8",
+  # archspec runs sysctl on macOS, so krn.hw calls it on Linux only.
+  "archspec>=0.2.7,<0.3; sys_platform == 'linux'",
+]
+
+[project.optional-dependencies]
+# Extras are opt-in; platform markers cannot detect hardware. `krn.hw.report(System.detect())` names the extras a machine needs.
+cuda = [
+  "cuda-core>=1.2,<2; sys_platform == 'linux'",
+  "cuda-bindings>=13.4,<14; sys_platform == 'linux'",
+  "cuda-pathfinder>=1.8,<2; sys_platform == 'linux'",
+  "nvidia-nvjitlink>=13,<14; sys_platform == 'linux'",
+  # cuda-bindings only supplies the wrapper; its native NVRTC runtime is opt-in upstream.
+  "nvidia-cuda-nvrtc>=13,<14; sys_platform == 'linux'",
+]
+cuda-libs = [
+  "nvmath-python[cu13]>=1.0,<2; sys_platform == 'linux'",
+]
+cuda-dx = [
+  "nvmath-python[cu13-dx]>=1.0,<2; sys_platform == 'linux'",
+]
+cccl = ["cuda-cccl>=1.3; sys_platform == 'linux'"]
+# Reference and oracle libraries for tests and benchmarks; never recommended by the hardware report.
+refs = [
+  "nvmath-python[cu13-dx]>=1.0,<2; sys_platform == 'linux'",
+  "cupy-cuda13x>=14.2,<15; sys_platform == 'linux'",
+  "cuda-cccl>=1.3; sys_platform == 'linux'",
+  "nvidia-cutlass-dsl>=4.8.1,<5; sys_platform == 'linux'",
+  "cuda-tile>=1.7,<2; sys_platform == 'linux'",
+  "flash-attn-4>=4.0.0b37,<5; sys_platform == 'linux'",
+  "flashinfer-python>=0.7.2.post1,<1; sys_platform == 'linux'",
+  "nvidia-cudnn-frontend>=1.32.1,<2; sys_platform == 'linux'",
+]
+metal = [
+  "pyobjc-framework-Metal>=13,<14; sys_platform == 'darwin'",
+  "pyobjc-framework-MetalPerformanceShaders>=13,<14; sys_platform == 'darwin'",
+  "mlx>=0.32,<1; sys_platform == 'darwin'",
+]
+# hip-python itself is a py3 wheel, but its rocm-bindings dependencies are CPython abi3 manylinux wheels for x86_64 only.
+# amdsmi is AMD's own Python wrapper; it loads libamd_smi from the ROCm install.
+hip = [
+  "hip-python>=10,<11; sys_platform == 'linux' and platform_machine == 'x86_64'",
+  "amdsmi>=7.0,<8; sys_platform == 'linux'",
+]
+# Intel: Sysman live readings through pyzes, static properties of the CPU, iGPU and NPU through OpenVINO.
+intel = [
+  "pyzes>=0.1.4,<1; sys_platform == 'linux'",
+  "openvino>=2026.4,<2027; sys_platform != 'linux' or platform_machine == 'x86_64'",
+]
+# Wide-coverage hardware readers: any GPU through WebGPU adapters, and the CPU, cache and PCI topology on Linux.
+probe = [
+  "wgpu>=0.32,<1",
+  "pyhwloc>=3,<4; sys_platform == 'linux'",
+]
+# The profiler's vendor tracers (`krn.profile`): CUPTI activity and NVTX ranges on NVIDIA, os_signpost intervals on Apple.
+# ROCTx and the Level Zero tracer load through `krn.hw.libraries` from the ROCm and oneAPI installs.
+perf = [
+  "cupti-python>=13.4,<14; sys_platform == 'linux'",
+  "nvtx>=0.2.16,<0.3; sys_platform == 'linux'",
+  "os-signpost>=0.0.3,<1; sys_platform == 'darwin'",
+]
+dev = [
+  "cyclopts>=5.3.2,<6",
+  "ruff>=0.17.3",
+  "ty>=0.0.95",
+  "pyrefly>=1.4.0",
+  "pytest>=9.2",
+  "pytest-cov>=7.1",
+  "pytest-subprocess>=1.6",
+  "pytest-timeout>=2.4",
+  "griffe>=2.4.1, <3",
+  "hypothesis>=6.170",
+  "jsonschema>=4.26.0, <5",
+  "syrupy>=6.1",
+  "lizard>=1.17",
+  "tiktoken>=0.12",
+  "mmh3>=5.3",
+  "xxhash>=4.0",
+]
+
+[project.urls]
+Homepage = "https://phvv.me/krn"
+Documentation = "https://phvv.me/krn"
+Repository = "https://github.com/phvv-me/krn"
+Issues = "https://github.com/phvv-me/krn/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/krn"]
+
+# The site is its own app and is never installed with the library.
+[tool.hatch.build.targets.sdist]
+exclude = ["/evidence", "/notes"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py314"
+extend-exclude = [".mb"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "T20", "ANN401", "PGH", "BLE", "RUF"]
+
+[tool.pyrefly]
+project-includes = ["src", "tests", "examples", "experiments"]
+search-path = ["src", ".", "stubs", "experiments/sketch", "experiments"]
+ignore-missing-imports = ["torch", "torch.*", "lizard", "tiktoken"]
+project-excludes = ["tests/kernels/**", "src/krn/lib/lib_kernels.py", "experiments/sketch/mistakes.py", "experiments/e3_chain_kernel.py"]
+python-version = "3.14"
+
+[tool.ty.environment]
+python-version = "3.14"
+extra-paths = ["stubs", ".", "src", "experiments/sketch", "experiments"]
+
+# The typed `krn.math` overloads are stubs whose bodies raise NotImplementedError (the compiler lowers the call, the body never runs).
+[tool.ty.rules]
+useless-overload-body = "ignore"
+
+[tool.ty.src]
+include = ["src", "tests", "examples", "experiments"]
+exclude = ["tests/kernels", "src/krn/lib/lib_kernels.py", "experiments/sketch/mistakes.py", "experiments/e3_chain_kernel.py"]
+
+[tool.pytest.ini_options]
+addopts = "--import-mode=importlib -q -ra --strict-markers --cov=krn --cov-report=term-missing"
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+timeout = 300
+markers = ["hardware: needs a real accelerator and its driver; runs only with KRN_HARDWARE=1"]
+
+[tool.coverage.run]
+source = ["krn"]
+branch = true
+# Temporary migration scope; every moved module is listed explicitly.
+omit = [
+  "src/krn/compiler/text.py",
+  "src/krn/runtime/nvrtc.py",
+  "src/krn/__init__.py",
+  "src/krn/compiler/api.py",
+  "src/krn/compiler/artifacts.py",
+  "src/krn/compiler/capture.py",
+  "src/krn/compiler/cuda.py",
+  "src/krn/compiler/debug.py",
+  "src/krn/compiler/dtypes.py",
+  "src/krn/compiler/emit.py",
+  "src/krn/compiler/errors.py",
+  "src/krn/compiler/heuristics.py",
+  "src/krn/compiler/hip.py",
+  "src/krn/compiler/ir.py",
+  "src/krn/compiler/lower.py",
+  "src/krn/compiler/matrix.py",
+  "src/krn/compiler/msl.py",
+  "src/krn/compiler/source.py",
+  "src/krn/compiler/space.py",
+  "src/krn/compiler/validity.py",
+  "src/krn/data/columns.py",
+  "src/krn/data/formats.py",
+  "src/krn/data/sparse.py",
+  "src/krn/data/sparse_build.py",
+  "src/krn/data/strings.py",
+  "src/krn/data/unicode_tables.py",
+  "src/krn/emulator/emulate.py",
+  "src/krn/facts/catalog.py",
+  "src/krn/facts/intrinsics/__init__.py",
+  "src/krn/facts/intrinsics/async_copy.py",
+  "src/krn/facts/intrinsics/atomic_block.py",
+  "src/krn/facts/intrinsics/atomic_system.py",
+  "src/krn/facts/intrinsics/bfloat162.py",
+  "src/krn/facts/intrinsics/bits.py",
+  "src/krn/facts/intrinsics/bulk.py",
+  "src/krn/facts/intrinsics/cache.py",
+  "src/krn/facts/intrinsics/dsmem.py",
+  "src/krn/facts/intrinsics/fast.py",
+  "src/krn/facts/intrinsics/half2.py",
+  "src/krn/facts/intrinsics/libm.py",
+  "src/krn/facts/intrinsics/mbarrier.py",
+  "src/krn/facts/intrinsics/rounded.py",
+  "src/krn/facts/intrinsics/simd.py",
+  "src/krn/facts/targets.py",
+  "src/krn/frontend/_ops.py",
+  "src/krn/frontend/atomic.py",
+  "src/krn/frontend/dtypes.py",
+  "src/krn/frontend/geometry.py",
+  "src/krn/frontend/groups/__init__.py",
+  "src/krn/frontend/groups/block.py",
+  "src/krn/frontend/groups/cg.py",
+  "src/krn/frontend/groups/cluster.py",
+  "src/krn/frontend/groups/grid.py",
+  "src/krn/frontend/groups/thread.py",
+  "src/krn/frontend/groups/warp.py",
+  "src/krn/frontend/iteration.py",
+  "src/krn/frontend/kernel.py",
+  "src/krn/frontend/memory.py",
+  "src/krn/frontend/numerics.py",
+  "src/krn/frontend/pipeline.py",
+  "src/krn/frontend/precision.py",
+  "src/krn/frontend/records.py",
+  "src/krn/frontend/scopes.py",
+  "src/krn/frontend/types.py",
+  "src/krn/frontend/variants.py",
+  "src/krn/functools.py",
+  "src/krn/hw/system.py",
+  # API sketches like frontend/numerics.py: `todo()` bodies and overloads that capture reads and nothing runs.
+  "src/krn/itertools.py",
+  "src/krn/lib/autodiff.py",
+  "src/krn/lib/lib.py",
+  "src/krn/lib/lib_accelerate.py",
+  "src/krn/lib/lib_blas.py",
+  "src/krn/lib/lib_cublaslt.py",
+  "src/krn/lib/lib_cusparse.py",
+  "src/krn/lib/lib_host.py",
+  "src/krn/lib/lib_kernels.py",
+  "src/krn/lib/lib_mps.py",
+  "src/krn/lib/lib_nvidia.py",
+  "src/krn/lib/lib_ours.py",
+  "src/krn/lib/linalg.py",
+  "src/krn/runtime/api.py",
+  "src/krn/runtime/compile_options.py",
+  "src/krn/runtime/cpu.py",
+  "src/krn/runtime/cuda_backend.py",
+  "src/krn/runtime/host.py",
+  "src/krn/runtime/metal.py",
+  "src/krn/runtime/runtime.py",
+  "src/krn/runtime/settings.py",
+  "src/krn/cache/tuning.py",
+  "src/krn/cache/cpu.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 100
+exclude_lines = [
+  "pragma: no cover",
+  "raise NotImplementedError",
+  "if TYPE_CHECKING:",
+  "if __name__ == .__main__.:",
+  "^\\s*\\.\\.\\.$",
+  # API sketches: the body of a kernel-side stub is never executed on the host, the compiler lowers the call.
+  "^\\s*return todo\\(\\)$",
+]
+
+
+[tool.ruff.lint.per-file-ignores]
+# Preserve invariant legacy generics: PEP 695 changes dimension inference.
+"src/krn/frontend/{memory,numerics,_ops}.py" = ["UP046"]
+# One aligned row per intrinsic, as in the research source.
+"src/krn/facts/catalog.py" = ["E501"]
+# Parsed kernel fixtures deliberately contain unused variables and device print statements.
+"tests/kernels/*.py" = ["B007", "F841", "RUF059", "SIM108", "UP037", "T201"]
+# Worker-thread boundaries must retain and report exceptions to their caller.
+"src/krn/runtime/runtime.py" = ["BLE001"]
+# The drain worker retains a failed snapshot or handler and goes on; a bare worker loop cannot let one record kill the log.
+"src/krn/log/drain.py" = ["BLE001"]
+"tests/runtime/test_cuda_backend.py" = ["BLE001"]
+
+# Deliberate device printf is a language example.
+"examples/03_memory_and_sync/03_print_assert_bounds.py" = ["T201"]
+
+[[tool.ty.overrides]]
+include = ["experiments/sketch/host_solve.py", "experiments/promotion.py", "experiments/metrics.py"]
+[tool.ty.overrides.rules]
+unresolved-import = "ignore"
