@@ -100,6 +100,7 @@ dev = [
   "tiktoken>=0.12",
   "mmh3>=5.3",
   "xxhash>=4.0",
+  "wgpu>=0.32,<1",
 ]
 
 [project.urls]

@@ -51,6 +51,7 @@ mmh3               = ">=5.3"
 xxhash             = ">=4.0"
 griffe             = ">=2.4.1, <3"
 jsonschema         = ">=4.26.0, <5"
+wgpu               = ">=0.32,<1"
 
 [on.linux.deps]
 clang = ">=23.1.4,<24"
@@ -60,14 +61,12 @@ os-signpost = ">=0.0.3,<1"
 pyobjc-framework-Metal = ">=13,<14"
 pyobjc-framework-MetalPerformanceShaders = ">=13,<14"
 mlx = ">=0.32,<1"
-wgpu = ">=0.32,<1"
 openvino = ">=2026.4,<2027"
 
 [on.linux.python.deps]
 cupti-python = ">=13.4,<14"
 nvtx = ">=0.2.16,<0.3"
 pyzes = ">=0.1.4,<1"
-wgpu = ">=0.32,<1"
 
 # OpenVINO's ARM Linux wheel needs glibc 2.35, and the GH200's RHEL 9 has 2.34. pyhwloc is left out of the managed
 # environment: it ships only an sdist whose CMake build fails on the job hosts, so it stays the opt-in `probe` extra.
