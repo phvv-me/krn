@@ -290,7 +290,7 @@
       "milestone": "m0",
       "feature": "release",
       "title": "Small first release",
-      "goal": "Ship 0.0.1 as a small development release containing only verified CPU/CUDA/Metal paths and explicit limitations; complete the reliable-alpha contract in 0.0.2 before expanding support claims.",
+      "goal": "Accepted owner decision: publish 0.0.1 as an experimental development release with explicitly scoped verification and unfinished APIs; the reliable contract release remains 0.0.2.",
       "status": "done",
       "depends_on": [],
       "references": [],
@@ -737,7 +737,7 @@
       "milestone": "m0",
       "feature": "release",
       "title": "Registry access",
-      "goal": "Authenticate the owner outside chat and verify account permissions for krn on each registry before publishing the reviewed artifact checksums. No registry credentials were present during preparation; public API 404 responses do not prove availability.",
+      "goal": "PyPI trusted publishing succeeded for phvv-me/krn through publish.yml and environment pypi; authenticate and verify separate npm and crates.io ownership before their publication.",
       "status": "blocked",
       "depends_on": [],
       "references": [
@@ -797,7 +797,7 @@
       "milestone": "m0",
       "feature": "release",
       "title": "Registry receipt",
-      "goal": "Record each successful registry version and install its public artifact before marking the name acquired or the release published.",
+      "goal": "Retain the verified PyPI 0.0.1 receipt and public-wheel smoke result, then obtain separate Rust and npm registry receipts and public-artifact checks before marking those names acquired.",
       "status": "open",
       "depends_on": [
         "release-registry-auth"
@@ -846,6 +846,54 @@
           "title": "Language starters",
           "contract": "Prepare independently useful 0.0.1 host utilities without claiming that Rust or JavaScript already compiles kernels.",
           "example": ""
+        }
+      ],
+      "example": "",
+      "dispatch_ready": false,
+      "dispatch_note": "Coordinator must attach accepted dependency receipts, source snapshot, writable files, cases and budget before dispatch.",
+      "owner": null
+    },
+    {
+      "id": "release-pypi-published",
+      "number": "0.2.8",
+      "milestone": "m0",
+      "feature": "release",
+      "title": "Python publication",
+      "goal": "Published krn 0.0.1 from source 7484e19 through trusted publishing after clean Linux and macOS CI; installed the public wheel with uv in a fresh Python environment and executed the CPU affine smoke at lengths 1 and 17.",
+      "status": "done",
+      "depends_on": [],
+      "references": [
+        "200",
+        "201",
+        "202"
+      ],
+      "reference_sources": [
+        {
+          "number": "200",
+          "title": "krn 0.0.1 on PyPI",
+          "url": "https://pypi.org/project/krn/0.0.1/"
+        },
+        {
+          "number": "201",
+          "title": "krn release verification",
+          "url": "https://github.com/phvv-me/krn/actions/runs/41786394375"
+        },
+        {
+          "number": "202",
+          "title": "krn release source",
+          "url": "https://github.com/phvv-me/krn/releases/tag/v0.0.1"
+        }
+      ],
+      "parent_context": [
+        {
+          "id": "m0",
+          "title": "M0 Development system",
+          "contract": "0.0.1 candidate: establish a reviewable source baseline and a small verified package; release remains approval-gated."
+        },
+        {
+          "id": "release",
+          "title": "Installation source safety and 0.0.1",
+          "contract": "Gate the small verified CPU/CUDA/Metal subset, not every later milestone. Document exclusions explicitly."
         }
       ],
       "example": "",
@@ -7521,8 +7569,8 @@
       "milestone": "m1",
       "feature": "errors",
       "title": "Failed outputs",
-      "goal": "Decision pending: make partially written results inaccessible through normal result APIs after a checked device failure, with no rollback promise for writes already performed.",
-      "status": "open",
+      "goal": "Accepted owner decision: preserve prior writes; caller-owned output aliases may contain partial results, while newly returned arrays become invalid after an uncaught failure reported at completion.",
+      "status": "done",
       "depends_on": [],
       "references": [],
       "reference_sources": [],
@@ -7577,8 +7625,8 @@
       "milestone": "m1",
       "feature": "errors",
       "title": "Handler participants",
-      "goal": "Decision pending: define which admitted handlers are lane-local or uniform and how a caught failure affects later participation, while refusing unsafe barrier exits.",
-      "status": "open",
+      "goal": "Accepted owner decision: a caught error resumes its lane through the handler; an uncaught error fails the launch when awaited or synchronized, and unsafe barrier participation is rejected.",
+      "status": "done",
       "depends_on": [],
       "references": [],
       "reference_sources": [],
@@ -7605,7 +7653,7 @@
       "milestone": "m1",
       "feature": "errors",
       "title": "Failure contract",
-      "goal": "Record accepted exception types and payloads, lane-local or uniform behavior, partial outputs and delivery boundaries before changing lowering.",
+      "goal": "Specify the admitted exception types and payloads under the accepted lane-local recovery, preserved-write and completion-failure contract, with source locations and explicit barrier-safety refusals.",
       "status": "open",
       "depends_on": [
         "error-delivery-decision",
