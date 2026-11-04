@@ -1,5 +1,6 @@
 # Changelog
 
+- Keep macOS dyld discovery optional so importing krn on Linux does not require ctypes.macholib.
 - Prepare 0.0.1 wheel and source artifacts with an explicit source allowlist and current project URLs; declare Rich because CPU runtime profiling imports it, and verify isolated pip/uv installation with a small CPU kernel.
 - Report coverage across the complete library without the old forced 100% threshold and migration omissions; skipped device paths remain unverified.
 - Normalize CUDA call sequences before retaining arguments and accept the existing mapping-based struct ABI; correct completion and Metal stream annotations so the release passes both type checkers.

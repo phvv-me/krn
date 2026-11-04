@@ -3,7 +3,6 @@
 import ctypes
 import os
 from abc import ABC, abstractmethod
-from ctypes.macholib.dyld import dyld_find
 from dataclasses import dataclass, replace
 from functools import cache
 from importlib import metadata
@@ -11,6 +10,11 @@ from importlib.util import find_spec
 from inspect import isabstract
 from pathlib import Path
 from typing import ClassVar
+
+try:
+    from ctypes.macholib.dyld import dyld_find
+except ImportError:
+    dyld_find = None
 
 try:
     from cuda import pathfinder
@@ -243,6 +247,8 @@ class FrameworkLoader(SonameLoader):
 
     def find(self, name: str) -> Path | None:
         # dyld also locates entries in the shared cache with no file on disk.
+        if dyld_find is None:
+            return None
         for candidate in self.candidates(name):
             try:
                 found = dyld_find(candidate, env={})

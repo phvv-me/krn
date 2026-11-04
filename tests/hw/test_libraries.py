@@ -91,6 +91,11 @@ def test_soname(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     assert lib.Libraries.load(str(found)).source == "soname"
 
 
+def test_framework_discovery_without_dyld(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(lib, "dyld_find", None)
+    assert lib.FrameworkLoader().find("libsystem") is None
+
+
 def test_wheel(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     monkeypatch.setattr(lib, "system_key", lambda: "Linux")
     file = PackagePath("lib/libamd_smi.so")
