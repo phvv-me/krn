@@ -140,7 +140,9 @@ def check_lanes(width: int) -> int:
     part way populated."""
     if (width < WARP and width > 0 and width & (width - 1) == 0) or (width > 0 and width % WARP == 0):
         return width
-    raise ValueError(f"launch threads={width}: a tile reduction needs 1, 2, 4, 8 or 16 threads, or a multiple of {WARP}")
+    raise ValueError(
+        f"launch threads={width}: a tile reduction needs 1, 2, 4, 8 or 16 threads, or a multiple of {WARP}"
+    )
 
 
 def lanes(launch: Geometry | None) -> Choice[int]:

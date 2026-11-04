@@ -1,7 +1,7 @@
 # krn: a typed Python kernel language and compiler. Run every verb from this directory.
 #
 #   mb run lint     ruff check, ruff format --check, ty and pyrefly over src, tests, examples and experiments
-#   mb run test     pytest with the 100% coverage gate; hardware tests skip unless KRN_HARDWARE=1
+#   mb run test     pytest with full-library coverage reporting; hardware tests skip unless KRN_HARDWARE=1
 #   mb run ci       lint, then test
 #
 # Python 3.14 only for now; recheck 3.15 in 2 to 3 months, about January 2027.
@@ -95,7 +95,7 @@ lint-format  = { run = "ruff format --check src tests examples experiments", des
 lint-ty      = { run = "ty check src tests examples experiments", description = "ty over src, tests, examples and experiments" }
 lint-pyrefly = { run = "pyrefly check", description = "pyrefly over src, tests, examples and experiments" }
 lint         = { depends = ["lint-ruff", "lint-format", "lint-ty", "lint-pyrefly"], description = "every static check" }
-test         = { run = "pytest --timeout=300", description = "pytest with the 100% coverage gate" }
+test         = { run = "pytest --timeout=300", description = "pytest with full-library coverage reporting" }
 ci           = { depends = ["lint", "test"], description = "what a change must pass" }
 spec         = { run = "python -m scripts.build_spec", description = "the release spec, into KRN_SPEC_OUT or the site's data/spec" }
 test-gpu = { run = "python -m pytest --timeout=300 -rs tests/runtime/test_gpu.py", description = "GPU tests; dispatch with mb run --on silo test-gpu" }

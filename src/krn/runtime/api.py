@@ -64,7 +64,7 @@ class Event(ABC):
 
     @abstractmethod
     def subscribe(self, callback: Callable[[], None]) -> bool:
-        """Run `callback` once, on the thread that resolves the event. True means it had already resolved, and nothing was kept."""
+        """Run once on the resolving thread; return True if already resolved without retaining the callback."""
 
     @property
     @abstractmethod

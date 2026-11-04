@@ -1,18 +1,18 @@
 # Development
 
-The roadmap owns the specification. `plan.json` indexes assignable leaves by dotted number and stable ID with explicit dependencies; `workflow.json` preserves workflow tasks outside the product hierarchy. A plan entry is not an active task. No unattended round starts merely because these files exist.
+The roadmap owns the specification. `plan.json` indexes assignable leaves by dotted number and stable ID with explicit dependencies; `workflow.json` preserves workflow tasks outside the product hierarchy. Each leaf also embeds its ordered ancestor contracts, code examples and source URLs. A plan entry is not an active task: its dispatch_ready flag stays false until a coordinator creates and validates a concrete packet. No unattended round starts merely because these files exist.
 
 ## Start a round
 
 1. Read the applicable AGENTS.md and the task's full parent feature in ROADMAP.html.
-2. The coordinator selects ready tasks and creates `tasks/<id>.md` from TASK.template.md. Record a source baseline, exact writable files, reviewer, acceptance cases and a bounded budget.
+2. The coordinator keeps the claim and evidence in `tasks/<id>.md` using TASK.template.md, then sends one plain-text paragraph from TASK.template.txt as `tasks/<id>.txt`. Embed the relevant current behavior, accepted parent contract, exact snapshot, writable files, dependency receipts, acceptance and finite budget; distinguish current API from proposed syntax. Workers do not fill the coordinator form or reconstruct the conversation.
 3. Readiness means every hard dependency has accepted evidence, not that an earlier milestone is complete. Prefer ready work that removes shared bottlenecks; split a leaf when its files, acceptance cases or budget cannot be bounded.
 4. Reserve files and hardware before dispatch. One writer per file; the coordinator owns shared exports, settings, IR schemas, dependency manifests and aggregate status. Independent backend files can run in parallel after the common contract.
 5. Run a three-task pilot before raising concurrency. Increase only while integration and review keep up. Do not keep adding workers behind a shared bottleneck.
 
 ## Implement and verify
 
-- Refresh the exact vendor documentation, relevant new papers and upstream source before implementation; record versions, licenses and changed assumptions, and read methods beyond abstracts.
+- Refresh the primary documentation, upstream source and papers relevant to the assigned slice; record versions, licenses and changed assumptions, reading methods beyond abstracts where research is needed. A small local repair does not require a new survey of unrelated papers.
 - Define each numerical case’s input family, dtype, target, independent oracle, metric and justified threshold before optimization; never weaken tolerances merely to pass.
 - Through library M4 use only the Mac mini M4 Pro, silo Intel CPU/iGPU and RTX 5080, crimson RTX 3090 GPU 1, and pedro-cvlab RTX 4090; qualify discovery and execution separately.
 
@@ -51,6 +51,16 @@ A timeout, skip or expected failure is not success. Never widen a tolerance, sup
 - `[!]` Blocked. A reproducer, reason and unblock condition exist.
 - `[x]` Accepted. Required evidence and review are recorded.
 
-Only the coordinator changes claims and aggregate state. Workers edit their owned task report. Heartbeats are evidence of progress, not permission to reclaim a live worker's files; contact or stop the worker before reassignment.
+Only the coordinator changes claims and aggregate state. Workers return brief progress or blocker paragraphs with changed files, commands and evidence receipts; the coordinator retains these with the task record. Heartbeats are evidence of progress, not permission to reclaim a live worker's files; contact or stop the worker before reassignment.
+
+The `development/examples/*.txt` briefs are blocked examples, not active assignments. Missing snapshots, reservations, decisions or budgets must be resolved before dispatch. Keep secrets, datasets and large logs out of both the coordinator record and worker paragraph.
 
 The workflow borrows preparation, narrow work allocation and independent review from [Bun's rewrite account](https://bun.com/blog/bun-in-rust). Its throughput and reviewer ratios are not assumed to transfer to a new kernel language.
+
+## Claude Code dynamic workflow
+
+Use `WORKFLOW.template.txt` as the coordinator request and `tasks/<id>.txt` as each worker's complete paragraph. Ask Claude Code to build a dynamic workflow from that request; inspect and save the resulting orchestration through `/workflows`. The workflow must validate dependency receipts and file reservations before dispatch, limit the pilot to three workers, review results independently, integrate locally, and schedule a new ready leaf when another blocks. A workflow script is orchestration, not a numerical specification.
+
+Pin the Claude Code version and verify which project instructions actually load; an ancestor CLAUDE.md can take precedence over AGENTS.md. In noninteractive mode, plain stdin is supported, but the `ultracode` keyword in `-p` does not itself opt into a workflow. Do not use bypass permissions or `--bare` as a shortcut: bare mode omits project context and changes authentication requirements. Retain the owner's existing login and explicit release and spend boundaries.
+
+Read the official [dynamic workflow](https://code.claude.com/docs/en/workflows), [noninteractive](https://code.claude.com/docs/en/headless), and [project instruction](https://code.claude.com/docs/en/memory#agents-md) documentation before implementing the dispatcher; this planning pass launches no Claude Code campaign.

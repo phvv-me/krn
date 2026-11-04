@@ -128,7 +128,7 @@ class MetalEvent(CPUEvent):
         super().__init__()
         self.device, self.shared, self.commands = stream.device, stream.shared, commands
         self.value = stream.sequence
-        stream.device.waiter.watch(self)
+        stream.gpu.waiter.watch(self)
 
     def _finish(self) -> None:
         error = None
@@ -153,7 +153,7 @@ class MetalStream(Stream):
     """One in-order command queue. A command buffer per launch makes submission immediate."""
 
     def __init__(self, device: MetalDevice) -> None:
-        self.device, self.queue = device, device.core.newCommandQueue()
+        self.device, self.gpu, self.queue = device, device, device.core.newCommandQueue()
         self.shared = device.core.newSharedEvent()
         self.sequence = 0
         self.commands: list[Metal.MTLCommandBuffer] = []

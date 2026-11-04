@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from functools import partial
@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 @dataclass(frozen=True, kw_only=True)
 class Slot:
-    """A lent slot: `index` picks the caller's buffers of this slot, and `stream` takes the work of the borrowing task."""
+    """A lent buffer index and the stream used by its borrowing task."""
 
     index: int
     stream: Stream
@@ -23,7 +23,7 @@ class Slot:
 class Slots:
     """A pool of `count` slots on the current device, for work that reuses buffers.
 
-    `async with slots.acquire() as slot:` waits while every slot is in flight and then lends a free one. Its work goes to
+    `async with slots.acquire() as slot:` waits for a free slot. Its work goes to
     `slot.stream`. On exit the slot records its stream and returns to the pool when that event is done, so the device
     never reads a buffer that another task has already reused, and the exiting task never waits for the device.
     """
@@ -35,7 +35,7 @@ class Slots:
             self._free.put_nowait(Slot(index=index, stream=device.stream()))
 
     @asynccontextmanager
-    async def acquire(self) -> AsyncIterator[Slot]:
+    async def acquire(self) -> AsyncGenerator[Slot]:
         slot = await self._free.get()
         try:
             yield slot

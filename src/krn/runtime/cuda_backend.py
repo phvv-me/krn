@@ -21,7 +21,7 @@ import struct
 import threading
 import time
 import weakref
-from collections.abc import Callable, Generator, Hashable, Iterator, Mapping, Sequence
+from collections.abc import Callable, Hashable, Iterator, Mapping, Sequence
 from dataclasses import is_dataclass
 from functools import cache, partial
 from typing import cast, overload
@@ -248,7 +248,7 @@ class CUDATensor[T: Scalar | bool, *S](Tensor[T, *S]):
         return f"CUDATensor({self.numpy}{list(self.shape)} at {self.pointer:#x})"
 
 
-def native(argument: Argument) -> Value:
+def native(argument: Argument | Value) -> Value:
     """An argument as the packer wants it: numbers, tensors, and mappings for structs."""
     match argument:
         case CUDATensor() | int() | float():
@@ -257,6 +257,8 @@ def native(argument: Argument) -> Value:
             return argument.item()
         case Scalar():
             return argument.value
+        case Mapping():
+            return {name: native(value) for name, value in argument.items()}
         case _ if is_dataclass(argument) and not isinstance(argument, type):
             return {name: native(getattr(argument, name)) for name, const in _layout(type(argument)) if not const}
         case _:
@@ -367,8 +369,9 @@ class CUDAProgram:
             raise ValueError(f"launch={launch}: tile product needs {self.unit.threads} threads")
         return dimensions(self.ir, launch, self.decisions)
 
-    def call(self, geometry: tuple[int, int, int, int], arguments: tuple[Argument, ...]) -> CUDACall:
+    def call(self, geometry: tuple[int, int, int, int], arguments: Sequence[Argument | Value]) -> CUDACall:
         """The launch of this program over `geometry` (grid x, y, z and threads) with its arguments encoded."""
+        arguments = tuple(arguments)
         return CUDACall(self, geometry, self.parameters.pack([native(arg) for arg in arguments]), arguments)
 
     def launch(self, stream: CUDAStream, grid: tuple[int, int, int], threads: int, packed: Packed) -> None:
@@ -400,7 +403,7 @@ class CUDACall:
         program: CUDAProgram,
         geometry: tuple[int, int, int, int],
         packed: Packed,
-        arguments: tuple[Argument, ...],
+        arguments: tuple[Argument | Value, ...],
     ) -> None:
         x, y, z, self.threads = geometry
         self.program, self.grid, self.packed, self.arguments = program, (x, y, z), packed, arguments

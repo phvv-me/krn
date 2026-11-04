@@ -1,5 +1,9 @@
 # Changelog
 
+- Prepare 0.0.1 wheel and source artifacts with an explicit source allowlist and current project URLs; declare Rich because CPU runtime profiling imports it, and verify isolated pip/uv installation with a small CPU kernel.
+- Report coverage across the complete library without the old forced 100% threshold and migration omissions; skipped device paths remain unverified.
+- Normalize CUDA call sequences before retaining arguments and accept the existing mapping-based struct ABI; correct completion and Metal stream annotations so the release passes both type checkers.
+
 - Add the tile operations attention needs, on the emulator, the C backend and the Apple GPU: `t.transpose()` (the
   compiler reads the swapped element, and the validity of a ragged edge swaps with it), the comparisons `<`, `<=`, `>`,
   `>=` on tiles giving bool tiles, `where(condition, x, y)` as a broadcast select, `arange(extent, axis, rank=, start=)`

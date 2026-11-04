@@ -2,7 +2,7 @@
 version = 1
 
 [environments.default]
-solved_from = "1bfc132b061804a48e3f8ad727286296b0be6cde52a37d942a28d9041e9b5d18"
+solved_from = "a994131b8e70c0397cc6c33767a57ca262433c54415fbc8c754ca8689a67b56d"
 solved_by = "0.79.0"
 lock = '''
 version: 7
@@ -2626,6 +2626,7 @@ packages:
   - numpy>=2.5.4,<3
   - patos>=0.0.15,<0.1
   - psutil>=7.2,<8
+  - rich>=15,<16
   - archspec>=0.2.7,<0.3 ; sys_platform == 'linux'
   - cuda-core>=1.2,<2 ; sys_platform == 'linux' and extra == 'cuda'
   - cuda-bindings>=13.4,<14 ; sys_platform == 'linux' and extra == 'cuda'

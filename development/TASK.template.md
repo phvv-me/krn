@@ -1,47 +1,43 @@
-# TASK_ID — Short title
+# Coordinator task record
 
-- State: [ ]
-- Owner:
-- Reviewer:
-- Dotted number and stable roadmap id:
-- Source baseline or snapshot:
-- Hard dependencies and accepted receipts:
-- Allowed files:
-- Read-only contracts:
-- Verified source revisions and licenses:
-- New papers or changed documentation:
-- Remaining abstract-only or inaccessible sources:
-- Reserved device or runner:
-- Budget and stop condition:
-- Approval boundary: local integration only
+This file is the coordinator's execution record, not the worker prompt. Send one self-contained paragraph from TASK.template.txt after readiness passes; the worker should not reconstruct the conversation or fill this entire form.
 
-## Outcome
+- State: [!] Not dispatchable
+- Stable roadmap ID and current dotted number:
+- Kind: research / contract / build / verify
+- Source snapshot and roadmap hash:
+- Accepted parent contracts and decisions:
+- Pending decisions that block this slice:
+- Accepted dependency receipt IDs:
+- Owner and independent reviewer:
+- Reserved writable files:
+- Read-only files and excluded repositories:
+- Reserved owned device, or no hardware:
+- Time or work budget and stop condition:
+- Relevant primary sources with revisions and refresh scope:
+- Approval boundary: local integration after checks only; no new commit, push, release, deployment, purchase or publication authorization
 
-One sentence describing observable behavior.
+## Worker paragraph
 
-## Work
-
-- [ ] Read the parent contract and refresh primary documentation, source code and relevant papers.
-- [ ] Define the smallest acceptance slice and independent oracle.
-- [ ] Implement within the allowed files.
-- [ ] Check required cases and affected integration.
-- [ ] Request independent review and record limitations.
+Save the completed paragraph as tasks/<stable-id>.txt. Name the outcome, relevant current behavior, accepted contract, precise editable files, smallest acceptance cases, verification command family and stop condition. Label proposed API as proposed. Include the numerical oracle and tolerance when relevant. Insert the actual snapshot and budget before dispatch.
 
 ## Acceptance
 
-- Inputs and expected outputs:
-- Required error:
-- Boundary case:
-- Target and capability requirements:
-- Numerical promise or tolerance and justification:
-- Commands and receipt ids:
+- Normal behavior and independent expected result:
+- Relevant boundary:
+- Required refusal or failure:
+- Device and numerical scope:
+- Focused checks and affected integration:
+- Evidence destination and required receipt fields:
 
-## Progress
+## Readiness
 
-Record what changed, what was learned and the next concrete step. Do not paste large logs.
+The coordinator verifies that there are no placeholders, each hard dependency has accepted evidence, no unresolved semantic question changes the slice, files and any device are reserved, the environment is available and the budget is finite. A plan leaf alone never authorizes execution. Record the reviewed paragraph digest here:
 
-## Completion
+## Progress and completion
 
-Accepted by:
-Evidence:
-Remaining exclusions:
+The worker reports a short outcome, changed files, commands, evidence receipts and limitations; no repeated form filling or large logs. The coordinator retains the claim and updates aggregate state after independent review.
+
+- Accepted by:
+- Evidence receipts:
+- Remaining exclusions or blocker and exact unblock condition:

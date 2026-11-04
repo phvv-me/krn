@@ -65,7 +65,11 @@ class Run:
 
     def __post_init__(self) -> None:
         _positive("run.workers", self.workers)
-        if isinstance(self.drain_seconds, bool) or not isinstance(self.drain_seconds, int | float) or self.drain_seconds <= 0:
+        if (
+            isinstance(self.drain_seconds, bool)
+            or not isinstance(self.drain_seconds, int | float)
+            or self.drain_seconds <= 0
+        ):
             raise SettingError("run.drain_seconds", str(self.drain_seconds), "a positive number of seconds")
         if self.target is not None:
             try:

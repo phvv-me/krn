@@ -17,7 +17,7 @@ from krn.compiler.ir import Reduction
 
 
 def identity(op: Reduction, dtype: np.dtype) -> np.generic:
-    """The value that leaves any other unchanged: a float sum starts from -0.0, so that it cannot turn a -0.0 into 0.0."""
+    """A neutral value; float sums start from -0.0 to preserve a negative zero."""
     if dtype.kind == "f":
         value = {Reduction.MAX: -np.inf, Reduction.MIN: np.inf, Reduction.PROD: 1.0}.get(op, -0.0)
     else:

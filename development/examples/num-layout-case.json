@@ -1,0 +1,187 @@
+{
+  "id": "num-layout-case",
+  "number": "2.7.4",
+  "kind": "verification",
+  "status": "prepared_not_ready",
+  "title": "Verify equivalent device layouts",
+  "outcome": "Produce one public-API conformance fixture proving that equivalent contiguous and positive-strided device views preserve logical values, or record the precise missing-view blocker without claiming support.",
+  "accepted_decisions": [
+    "Native default does not permit arbitrary fast math or silent precision loss.",
+    "Repeatability does not imply launch-geometry or cross-target invariance.",
+    "Use owned runners only; no commits, pushes or releases in this task.",
+    "Private implementation can be read for diagnosis but public acceptance examples cannot import it."
+  ],
+  "narrowing": "This task covers contiguous versus positive-strided layout only; split tile/block changes into num-tiling-case to avoid testing two independent invariances at once.",
+  "required_dependencies": [
+    {
+      "id": "layout-ir-abi",
+      "receipt": null,
+      "required_output": "Accepted implementation and target evidence for this dependency."
+    },
+    {
+      "id": "layout-cpu",
+      "receipt": null,
+      "required_output": "Accepted implementation and target evidence for this dependency."
+    },
+    {
+      "id": "layout-cuda",
+      "receipt": null,
+      "required_output": "Accepted implementation and target evidence for this dependency."
+    },
+    {
+      "id": "layout-metal",
+      "receipt": null,
+      "required_output": "Accepted implementation and target evidence for this dependency."
+    },
+    {
+      "id": "api-views",
+      "receipt": null,
+      "required_output": "Accepted implementation and target evidence for this dependency."
+    },
+    {
+      "id": "num-native",
+      "receipt": null,
+      "required_output": "Accepted implementation and target evidence for this dependency."
+    },
+    {
+      "id": "example-case-contract",
+      "receipt": null,
+      "required_output": "Accepted implementation and target evidence for this dependency."
+    }
+  ],
+  "baseline": {
+    "git_head": "93d6c5d93facecf37fd4d7951788c38f87a2e154",
+    "roadmap_sha256": "befb252089223e974b9762706b10cfec9f6791a468d6dbd40a751c173fee4cf5",
+    "plan_sha256": "d34184e950b213ab9c107181a80623e6002e8b047c1549323fd7d9e8c0ba5642",
+    "source_snapshot": null,
+    "note": "Prepared example only; coordinator must freeze source including uncommitted changes and supply dependency receipts before dispatch."
+  },
+  "allowed_files": [
+    "tests/contracts/test_layout_invariance.py (new; proposed path reserved by coordinator)",
+    "tests/contracts/kernels/layout_invariance.py (new; proposed path reserved by coordinator)",
+    "development/tasks/num-layout-case.md (worker report only)"
+  ],
+  "read_only_files": [
+    "AGENTS.md",
+    "ROADMAP.html#num-layout-case",
+    "development/plan.json",
+    "src/krn/frontend/memory.py",
+    "src/krn/runtime/api.py",
+    "src/krn/runtime/cuda_backend.py",
+    "src/krn/runtime/metal.py",
+    "src/krn/runtime/cpu.py",
+    "tests/helpers/devices.py",
+    "tests/compiler/test_numerics.py"
+  ],
+  "coordinator_owned": [
+    "src/krn/__init__.py",
+    "public tensor/view protocol",
+    "tests/conftest.py",
+    "pyproject.toml",
+    "mb.toml",
+    "ROADMAP.html",
+    "development/plan.json"
+  ],
+  "tests_and_expected_results": [
+    "Construct a contiguous 3x3 float32 matrix and a positive-strided view over a larger allocation with identical logical values.",
+    "Assert the actual object passed to the kernel retains shape(3,3), a nonzero base offset and strides different from the contiguous tensor; record observed launch descriptors.",
+    "Copy each logical element and compare output bits exactly; finite integer-valued row sums must equal [3,12,21] in the fixed ordered kernel.",
+    "Add an empty shape and a one-element view without reading padding.",
+    "Exercise one declared unsupported layout and verify the specific public error; a refusal proves only the refusal contract.",
+    "Repeat on locally admitted CPU/Metal and reserved owned CUDA as available; missing hardware stays unverified, not green.",
+    "Do not use np.allclose as evidence of repeatable/portable equality; compare bits only where that exact contract applies."
+  ],
+  "oracle_code": "# Runnable host oracle only; it does not exercise krn or establish device strides.\nimport numpy as np\ncontiguous = np.arange(9, dtype=np.float32).reshape(3, 3)\nbacking = np.full((3, 7), np.nan, dtype=np.float32)\nbacking[:, 1:6:2] = contiguous\nstrided = backing[:, 1:6:2]\nassert strided.shape == contiguous.shape\nassert strided.strides == (28, 8)\nassert contiguous.strides == (12, 4)\nassert strided.ctypes.data - backing.ctypes.data == 4\nnp.testing.assert_array_equal(strided, contiguous)\nnp.testing.assert_array_equal(contiguous.sum(axis=1), [3, 12, 21])\n",
+  "device_adapter_requirement": "Construct the device view using the accepted public API and verify its real launch shape/strides/offset before executing; do not invent a proposed call in a supposedly runnable example.",
+  "known_trap": "fresh() copies NumPy views, CUDA to_device densifies with np.ascontiguousarray, and Metal to_device copies into a fresh allocation. Those helpers must not be used to claim preserved device-layout coverage.",
+  "commands": [
+    "mb proc timeout 120 mb run --no-install python -m pytest tests/contracts/test_layout_invariance.py -q --no-cov",
+    "mb proc timeout 120 mb run --no-install ruff check tests/contracts/test_layout_invariance.py tests/contracts/kernels/layout_invariance.py",
+    "mb proc timeout 300 mb run lint"
+  ],
+  "command_notes": "Proposed focused commands only; --no-cov avoids presenting a narrow run as whole-library coverage, while cumulative milestone verification measures the declared coverage denominator.",
+  "exclusions": [
+    "Do not implement device-view support or fix compiler stride lowering in this leaf.",
+    "Do not change global numerical defaults, arithmetic lowering, reduction trees, output allocation or private/public module layout.",
+    "Do not add negative/zero-stride support, aliasing writes or launch-geometry invariance.",
+    "Do not make cross-vendor bitwise claims from three hardware runs.",
+    "Do not edit another repository or obtain paid compute."
+  ],
+  "budget": {
+    "suggested": "One bounded verification slice; coordinator sets time budget and device reservation before dispatch.",
+    "stop": "Stop immediately if the public view contract/receipt is absent, actual launch strides are erased, or accepted arithmetic promises conflict. Two materially different failed attempts or exhausted task budget ends the failing work."
+  },
+  "blocker_example": {
+    "state": "[!]",
+    "category": "dependency",
+    "blocking_condition": "No accepted public constructor preserves a positive-strided device view; existing upload helpers densify.",
+    "reproducer": "Show contiguous and host-strided inputs yielding identical contiguous device strides; attach source lines and observed descriptor.",
+    "expected": "A documented public strided view reaches the launch unchanged, or a deliberate unsupported-layout error occurs.",
+    "unblock": "A separate tensor-view task supplies the accepted public view API and a receipt proving stride/base preservation.",
+    "independent_work": "Finish the host oracle, case specification and read-only source audit; do not mark device conformance accepted."
+  },
+  "source_refresh": [
+    "Read official numerical reproducibility references already attached to num-layout-case and pin the relevant compiler/runtime versions.",
+    "Inspect the accepted view/API dependency revision before dispatch; no new paper search is needed merely to compare storage mapping.",
+    "Record changed source assumptions and exact documents read; no source excerpt alone is hardware evidence."
+  ],
+  "completion_receipt": [
+    "Baseline and final source identity",
+    "Allowed files changed",
+    "Target and actual launch layout descriptors",
+    "Commands and receipts",
+    "Exact assertion outcomes",
+    "Unsupported/unavailable scope",
+    "Independent reviewer confirmation",
+    "No commit/push/publication performed"
+  ],
+  "review_focus": "Reviewer verifies that the tested object is genuinely strided on the device, no helper normalized it, the oracle is independent, and no guarantee was silently weakened.",
+  "previous_number": "1.1.1.5.3",
+  "semantic_context": [
+    {
+      "id": "m1",
+      "title": "Contracts",
+      "contract": "The reliable alpha requires executable CPU/CUDA/Metal contracts; compile-only or unavailable cases are separate evidence."
+    },
+    {
+      "id": "numerics",
+      "title": "Numerical requirements",
+      "contract": "Arithmetic semantics, accuracy, repeatability and implementation strategy are separate."
+    },
+    {
+      "id": "num-scope",
+      "title": "Define the promises",
+      "contract": "Native is the owner-approved default within declared precision/accuracy; repeatable pins an execution envelope; portable requires a named supported subset and otherwise refuses."
+    },
+    {
+      "id": "num-invariance",
+      "title": "Name allowed changes",
+      "contract": "Layout, tiling, batching and partitioning are separate invariance claims; preserve logical operands, reduction dimension and output mapping."
+    }
+  ],
+  "parent_context": [
+    {
+      "id": "m2",
+      "title": "M2 Portable primitives",
+      "contract": "0.0.3 candidate: share typed primitive semantics while rejecting unavailable target guarantees."
+    },
+    {
+      "id": "layout-lowering-feature",
+      "title": "Layout lowering",
+      "contract": ""
+    }
+  ],
+  "dispatch_ready": false,
+  "references": [
+    {
+      "number": "40",
+      "title": "DLPack \u00b7 Python interchange",
+      "url": "https://dmlc.github.io/dlpack/latest/python_spec.html"
+    },
+    {
+      "number": "150",
+      "title": "Mojo TileTensor layouts",
+      "url": "https://max.modular.com/tile-tensor/layouts/"
+    }
+  ]
+}

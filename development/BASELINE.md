@@ -18,3 +18,7 @@ The roadmap dependency graph is acyclic. It retains earlier task IDs and complet
 Historical notes were ingested and verified before eviction: 332 files, 14,907,384 bytes, under the original workspace path `krn/krn.py/notes`. Recover them with `mb data lake materialize notes` from this repository when source archaeology is needed; they are not current instructions. Original source comments may still name these archived paths.
 
 Initial local commits were authorized separately. Automatic Mainboard commits remain disabled; later commits, pushes, releases and paid compute still require approval. Git and jj share each active repository; the app's jj snapshot limit admits its existing exported specification files.
+
+## Release preparation follow-up
+
+The initial failures above remain historical evidence. Release preparation now passes all static checks and 10,999 local tests; 6,020 skips and 7 expected failures remain explicit. The migration omission list and forced 100% threshold were removed. Combined whole-library coverage is 89.78%, with syntax exclusions still reported. See RELEASE-0.0.1.md for candidate scope and registry state; none of these checks establishes all-hardware support.

@@ -67,12 +67,13 @@ class Completion(Event):
         try:
             self._finish()
         except Exception as failure:  # a waiter has no caller to raise to: the failure is the event's result
+            log.debug("device completion failed", exc_info=True)
             self.resolve(failure)
         else:
             self.resolve()
 
     def _finish(self) -> None:
-        """Block until the work is complete, and raise what the device reported for it. Only a watched event needs this."""
+        """Block until completion and raise the device failure; used only by watched events."""
         raise NotImplementedError(f"{type(self).__name__} is resolved by the thread that reaches it, not settled")
 
 
@@ -96,7 +97,7 @@ class Waiter:
 
 
 class Keeper:
-    """The launch arguments a stream holds until the work that reads them has completed, with the names of those launches.
+    """Named launch arguments retained until the work that reads them completes.
 
     A launch's arguments wait with the next marker of their stream, and a marker's arguments are released, in order,
     once that marker's event is done. The tensors of a launch therefore outlive the device's use of them.
@@ -121,7 +122,7 @@ class Keeper:
             self._marks.popleft()
 
     def pending(self) -> tuple[str, ...]:
-        """The names of the launches not known to be complete: those of the first marker not done, then the open ones."""
+        """Launches awaiting completion, from unfinished markers followed by unmarked launches."""
         marked = [(event, launches) for event, launches in self._marks if not event.done()]
         names = [name for _, launches in marked for name, _ in launches]
         return (*names, *(name for name, _ in self._open))

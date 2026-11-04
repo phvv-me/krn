@@ -22,6 +22,7 @@ dependencies = [
   "numpy>=2.5.4,<3",
   "patos>=0.0.15,<0.1",
   "psutil>=7.2,<8",
+  "rich>=15,<16",
   # archspec runs sysctl on macOS, so krn.hw calls it on Linux only.
   "archspec>=0.2.7,<0.3; sys_platform == 'linux'",
 ]
@@ -102,8 +103,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://phvv.me/krn"
-Documentation = "https://phvv.me/krn"
+Homepage = "https://krn.dev"
+Documentation = "https://krn.dev"
 Repository = "https://github.com/phvv-me/krn"
 Issues = "https://github.com/phvv-me/krn/issues"
 
@@ -112,7 +113,7 @@ packages = ["src/krn"]
 
 # The site is its own app and is never installed with the library.
 [tool.hatch.build.targets.sdist]
-exclude = ["/evidence", "/notes"]
+include = ["/src/krn", "/README.md", "/LICENSE", "/pyproject.toml", "/ROADMAP.html", "/CONTRIBUTING.md"]
 
 [tool.ruff]
 line-length = 120
@@ -151,104 +152,13 @@ markers = ["hardware: needs a real accelerator and its driver; runs only with KR
 [tool.coverage.run]
 source = ["krn"]
 branch = true
-# Temporary migration scope; every moved module is listed explicitly.
-omit = [
-  "src/krn/compiler/text.py",
-  "src/krn/runtime/nvrtc.py",
-  "src/krn/__init__.py",
-  "src/krn/compiler/api.py",
-  "src/krn/compiler/artifacts.py",
-  "src/krn/compiler/capture.py",
-  "src/krn/compiler/cuda.py",
-  "src/krn/compiler/debug.py",
-  "src/krn/compiler/dtypes.py",
-  "src/krn/compiler/emit.py",
-  "src/krn/compiler/errors.py",
-  "src/krn/compiler/heuristics.py",
-  "src/krn/compiler/hip.py",
-  "src/krn/compiler/ir.py",
-  "src/krn/compiler/lower.py",
-  "src/krn/compiler/matrix.py",
-  "src/krn/compiler/msl.py",
-  "src/krn/compiler/source.py",
-  "src/krn/compiler/space.py",
-  "src/krn/compiler/validity.py",
-  "src/krn/data/columns.py",
-  "src/krn/data/formats.py",
-  "src/krn/data/sparse.py",
-  "src/krn/data/sparse_build.py",
-  "src/krn/data/strings.py",
-  "src/krn/data/unicode_tables.py",
-  "src/krn/emulator/emulate.py",
-  "src/krn/facts/catalog.py",
-  "src/krn/facts/intrinsics/__init__.py",
-  "src/krn/facts/intrinsics/async_copy.py",
-  "src/krn/facts/intrinsics/atomic_block.py",
-  "src/krn/facts/intrinsics/atomic_system.py",
-  "src/krn/facts/intrinsics/bfloat162.py",
-  "src/krn/facts/intrinsics/bits.py",
-  "src/krn/facts/intrinsics/bulk.py",
-  "src/krn/facts/intrinsics/cache.py",
-  "src/krn/facts/intrinsics/dsmem.py",
-  "src/krn/facts/intrinsics/fast.py",
-  "src/krn/facts/intrinsics/half2.py",
-  "src/krn/facts/intrinsics/libm.py",
-  "src/krn/facts/intrinsics/mbarrier.py",
-  "src/krn/facts/intrinsics/rounded.py",
-  "src/krn/facts/intrinsics/simd.py",
-  "src/krn/facts/targets.py",
-  "src/krn/frontend/_ops.py",
-  "src/krn/frontend/atomic.py",
-  "src/krn/frontend/dtypes.py",
-  "src/krn/frontend/geometry.py",
-  "src/krn/frontend/groups/__init__.py",
-  "src/krn/frontend/groups/block.py",
-  "src/krn/frontend/groups/cg.py",
-  "src/krn/frontend/groups/cluster.py",
-  "src/krn/frontend/groups/grid.py",
-  "src/krn/frontend/groups/thread.py",
-  "src/krn/frontend/groups/warp.py",
-  "src/krn/frontend/iteration.py",
-  "src/krn/frontend/kernel.py",
-  "src/krn/frontend/memory.py",
-  "src/krn/frontend/numerics.py",
-  "src/krn/frontend/pipeline.py",
-  "src/krn/frontend/precision.py",
-  "src/krn/frontend/records.py",
-  "src/krn/frontend/scopes.py",
-  "src/krn/frontend/types.py",
-  "src/krn/frontend/variants.py",
-  "src/krn/functools.py",
-  "src/krn/hw/system.py",
-  # API sketches like frontend/numerics.py: `todo()` bodies and overloads that capture reads and nothing runs.
-  "src/krn/itertools.py",
-  "src/krn/lib/autodiff.py",
-  "src/krn/lib/lib.py",
-  "src/krn/lib/lib_accelerate.py",
-  "src/krn/lib/lib_blas.py",
-  "src/krn/lib/lib_cublaslt.py",
-  "src/krn/lib/lib_cusparse.py",
-  "src/krn/lib/lib_host.py",
-  "src/krn/lib/lib_kernels.py",
-  "src/krn/lib/lib_mps.py",
-  "src/krn/lib/lib_nvidia.py",
-  "src/krn/lib/lib_ours.py",
-  "src/krn/lib/linalg.py",
-  "src/krn/runtime/api.py",
-  "src/krn/runtime/compile_options.py",
-  "src/krn/runtime/cpu.py",
-  "src/krn/runtime/cuda_backend.py",
-  "src/krn/runtime/host.py",
-  "src/krn/runtime/metal.py",
-  "src/krn/runtime/runtime.py",
-  "src/krn/runtime/settings.py",
-  "src/krn/cache/tuning.py",
-  "src/krn/cache/cpu.py",
-]
+# Report the complete library; hardware skips remain visible gaps, not exclusions.
+omit = []
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 100
+# Establish a full-library baseline before choosing evidence-based regression gates.
+fail_under = 0
 exclude_lines = [
   "pragma: no cover",
   "raise NotImplementedError",

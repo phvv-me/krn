@@ -4,6 +4,8 @@ A typed Python kernel language. Write a GPU kernel as a small, ordinary Python f
 
 Status: pre-release. Python 3.14 only. Nothing is published yet. The plan is in [ROADMAP.html](ROADMAP.html).
 
+The 0.0.1 candidate is experimental. Building or importing it does not establish every backend or operation. Isolated installation checks currently cover a small scalar CPU kernel on local Arm64; fresh installed-package GPU qualification remains pending. Rust and JavaScript starters provide host sizing utilities only; they do not yet share this compiler.
+
 Tools and settings are generic: an explicit choice a target cannot honor raises `krn.errors.TargetError`
 with the feature, architecture, hardware or backend limitation, and an alternative. Unset values retain target defaults.
 See [settings and target diagnostics](https://krn.dev/start/settings/) for backend support and compiler options.
@@ -57,6 +59,8 @@ normalizations with `keepdims`. `examples/04_libraries/08_flash_attention.py` is
 
 ## Targets
 
+These are historical source-tree results, not qualification of every operation in the installed 0.0.1 candidate.
+
 | Target | Route | State |
 | --- | --- | --- |
 | CPU (x86 AVX2, Arm) | C through clang | tested |
@@ -101,7 +105,7 @@ The website is not in this repository. It is the app `../krn.dev`, with its own 
 
 ## Development
 
-Everything runs through mainboard from this directory: `mb run lint`, `mb run test`, `mb run ci`. Ruff, ty and pyrefly cover src, tests, examples and experiments. Hardware hosts are declared in `mb.toml`: `mb host sync <host>`, then `mb run --on <host> python -m pytest --no-cov tests`. Moved legacy modules sit in an explicit coverage omission list; every new module is held to 100 percent branch coverage. Use `krn.configure` or `krn.config` for grouped immutable settings; only target, cache, workers and `KRN_DEBUG*` seed them at import. See [CONTRIBUTING.md](CONTRIBUTING.md) for dependency changes.
+Everything runs through mainboard from the full source checkout: `mb run lint`, `mb run test`, `mb run ci`. Ruff, ty and pyrefly cover src, tests, examples and experiments. Hardware hosts are declared in `mb.toml`: `mb host sync <host>`, then `mb run --on <host> python -m pytest --no-cov tests`. Coverage reports the complete library without a forced percentage; skipped hardware paths remain gaps, and passing host tests do not establish accelerator support. Use `krn.configure` or `krn.config` for current grouped immutable settings; the planned flat API is not implemented yet. Only target, cache, workers and `KRN_DEBUG*` seed settings at import. See [CONTRIBUTING.md](CONTRIBUTING.md) for dependency changes.
 
 Settings change with `krn.configure(lib="ours", warn=krn.Warn(max_registers_per_thread=192))`,
 `krn.config.lib.matmul = "vendor"`, or a scoped `with krn.configure(lib="ours"):`. Compilations retain their starting

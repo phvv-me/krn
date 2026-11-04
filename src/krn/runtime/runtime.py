@@ -21,7 +21,7 @@ import time
 import weakref
 from abc import ABC, abstractmethod
 from collections import Counter, deque
-from collections.abc import Callable, Generator, Hashable, Mapping, Sequence
+from collections.abc import Callable, Hashable, Mapping, Sequence
 from contextvars import ContextVar
 from dataclasses import dataclass, field, fields, is_dataclass
 from functools import cache, cached_property, partial
