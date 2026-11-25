@@ -64,7 +64,7 @@ metal = [
 # amdsmi is AMD's own Python wrapper; it loads libamd_smi from the ROCm install.
 hip = [
   "hip-python>=10,<11; sys_platform == 'linux' and platform_machine == 'x86_64'",
-  "amdsmi>=7.0,<8; sys_platform == 'linux'",
+  "amdsmi>=7.0,<28; sys_platform == 'linux'",
 ]
 # Intel: Sysman live readings through pyzes, static properties of the CPU, iGPU and NPU through OpenVINO.
 intel = [
